@@ -13,7 +13,7 @@ Rspec::Core::RakeTask.new(:rcov) do |t|
 end
 
 Rake::RDocTask.new do |rdoc|
-  require File.expand_path("../lib/vidibus-resource/version", __FILE__)
+  require File.expand_path("../lib/vidibus/resource/version", __FILE__)
   rdoc.rdoc_dir = "rdoc"
   rdoc.title = "vidibus-resource #{Vidibus::Resource::VERSION}"
   rdoc.rdoc_files.include("README*")
