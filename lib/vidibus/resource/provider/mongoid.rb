@@ -33,7 +33,7 @@ module Vidibus::Resource
       def resource_consumer?
         false
       end
-      
+
       # TODO: Handle attributes properly
       def resourceable_hash
         attributes
