@@ -1,8 +1,7 @@
 require "rails"
 require "vidibus-uuid"
 require "vidibus-secure"
-# require "vidibus-secure"
-# require "vidibus-core_extensions"
+require "vidibus-api"
 
 $:.unshift(File.join(File.dirname(__FILE__), "vidibus"))
 require "resource"
