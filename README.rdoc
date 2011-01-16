@@ -1,0 +1,7 @@
+= vidibus-resource
+
+Description goes here.
+
+== Copyright
+
+Copyright (c) 2011 Andre Pankratz. See LICENSE for details.
