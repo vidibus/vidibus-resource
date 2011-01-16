@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["André Pankratz"]
   s.email       = ["andre@vidibus.com"]
-  s.homepage    = "http://github.com/vidibus/vidibus-resource"
+  s.homepage    = "https://github.com/vidibus/vidibus-resource"
   s.summary     = "Provides handling of remote resources"
   s.description = "Allows creation of proxy objects of remote resources on distributed applications."
 
