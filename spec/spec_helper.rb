@@ -3,9 +3,10 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
 
 require "rubygems"
 require "rspec"
+require "mongoid"
 require "rack/test"
 require "rr"
-require "webmock/rspec"
+# require "webmock/rspec"
 require "vidibus-resource"
 
 Mongoid.configure do |config|
@@ -16,7 +17,7 @@ Mongoid.configure do |config|
 end
 
 RSpec.configure do |config|
-  config.include WebMock
+  # config.include WebMock
   config.mock_with :rr
   config.before(:each) do
     Mongoid.master.collections.select {|c| c.name !~ /system/}.each(&:drop)
