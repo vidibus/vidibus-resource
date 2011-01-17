@@ -77,7 +77,7 @@ module Vidibus::Resource
         end
         if resource_attributes and (value = resource_attributes[attribute])
           self.class.class_eval do
-            field attribute.to_sym # Mongoid field
+            field attribute.to_sym, :type => value.class # Mongoid field
           end
           if writer
             send(name, *args)
