@@ -39,6 +39,16 @@ module Vidibus::Resource
         attributes
       end
 
+      # Fix empty arrays
+      def fixed_resourceable_hash
+        for key, value in resourceable_hash
+          if value === []
+            resourceable_hash[key] = [EMPTY_ARRAY_IDENTIFIER]
+          end
+        end
+        resourceable_hash
+      end
+
       protected
 
       # Update resource consumers if significant changes were made.
@@ -48,7 +58,7 @@ module Vidibus::Resource
         return unless resource_consumers and resource_consumers.any?
         return unless changes.except("resource_consumers", "updated_at").any?
 
-        hash = resourceable_hash
+        hash = fixed_resourceable_hash
         hash_checksum = Digest::MD5.hexdigest(hash.to_s)
         unless hash_checksum == resourceable_hash_checksum
           self.resourceable_hash_checksum = hash_checksum

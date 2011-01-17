@@ -5,7 +5,7 @@ class Api::ResourcesController < ApiController
   # Creates resource consumer on provider.
   def create
     @instance.add_resource_consumer(params["service"])
-    render :json => {:resource => @instance.resourceable_hash}
+    render :json => {:resource => @instance.fixed_resourceable_hash}
   end
 
   # Updates resource on consumer.

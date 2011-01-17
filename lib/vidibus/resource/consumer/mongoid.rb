@@ -22,8 +22,8 @@ module Vidibus::Resource
       # Registers this consumer with provider.
       def add_resource_consumer
         response = resource_provider.post("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
-        resource = response["resource"]
-        self.resource_attributes = resource
+        data = response["resource"]
+        self.resource_attributes = fix_resource_attributes(data)
         set_resource_attributes(true)
         true # ensure true!
       end
@@ -37,6 +37,7 @@ module Vidibus::Resource
       # Updates resource attributes.
       # TODO: Update only data that has been changed.
       def update_resource_attributes(data)
+        data = fix_resource_attributes(data)
         update_attributes(:resource_attributes => data)
       end
 
@@ -87,6 +88,16 @@ module Vidibus::Resource
         else
           super
         end
+      end
+
+      # Fix empty arrays
+      def fix_resource_attributes(data)
+        for key, value in data
+          if value === [EMPTY_ARRAY_IDENTIFIER]
+            data[key] = []
+          end
+        end
+        data
       end
 
       module ClassMethods
