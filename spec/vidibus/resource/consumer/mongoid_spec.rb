@@ -10,6 +10,7 @@ describe "Vidibus::Resource::Consumer::Mongoid" do
   let(:model) do
     Model.new.tap do |m|
       m.resource_attributes = {"name" => "Jenny"}
+      m.set_resource_attributes(true)
     end
   end
 
