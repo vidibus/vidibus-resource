@@ -6,6 +6,9 @@ module Vidibus::Resource
     module Mongoid
       extend ActiveSupport::Concern
 
+      # Valid types in Mongoid
+      VALID_TYPES = [Array, BigDecimal, Boolean, Date, DateTime, Float, Hash, Integer, String, Symbol, Time]
+
       included do
         include Vidibus::Uuid::Mongoid
 
@@ -52,43 +55,27 @@ module Vidibus::Resource
         end
       end
 
-      protected
-
       # Populates attributes of instance from
       # received resource_attributes hash.
       def set_resource_attributes(force = false)
         if resource_attributes_changed? or force == true
           for key, value in resource_attributes
-            send("#{key}=", value)
+
+            setter = respond_to?("#{key}=")
+            unless setter or respond_to?(key) # Check for setter and getter!
+              field_type = VALID_TYPES.include?(value.class) ? value.class : String
+              self.class.class_eval do
+                field key.to_sym, :type => field_type # Mongoid field
+              end
+              setter = true
+            end
+            send("#{key}=", value) if setter
           end
         end
         true # ensure true!
       end
 
-      # Defines attributes of resource_attributes hash as
-      # methods on consumer instance.
-      def method_missing(name, *args, &block)
-        if name.to_s.match(/(.+)\=$/)
-          writer = true
-          attribute = $1
-          name = "#{attribute}="
-        else
-          attribute = name.id2name
-        end
-        if resource_attributes and (value = resource_attributes[attribute])
-          self.class.class_eval do
-            field attribute.to_sym, :type => value.class # Mongoid field
-          end
-          if writer
-            send(name, *args)
-          else
-            send("#{attribute}=", value)
-            send(name)
-          end
-        else
-          super
-        end
-      end
+      protected
 
       # Fix empty arrays
       def fix_resource_attributes(data)
