@@ -6,9 +6,6 @@ module Vidibus::Resource
     module Mongoid
       extend ActiveSupport::Concern
 
-      # Valid types in Mongoid
-      VALID_TYPES = [Array, BigDecimal, Boolean, Date, DateTime, Float, Hash, Integer, String, Symbol, Time]
-
       included do
         include Vidibus::Uuid::Mongoid
 
@@ -60,16 +57,34 @@ module Vidibus::Resource
       def set_resource_attributes(force = false)
         if resource_attributes_changed? or force == true
           for key, value in resource_attributes
+            meth = key.to_s
 
-            setter = respond_to?("#{key}=")
-            unless setter or respond_to?(key) # Check for setter and getter!
-              field_type = VALID_TYPES.include?(value.class) ? value.class : String
-              self.class.class_eval do
-                field key.to_sym, :type => field_type # Mongoid field
-              end
-              setter = true
+            unless respond_to?("#{meth}=")
+              self.class.class_eval <<-END
+                def #{meth}=(value)
+                  self.write_attribute(:#{meth}, value)
+                end
+              END
             end
-            send("#{key}=", value) if setter
+
+            unless respond_to?("#{meth}?")
+              self.class.class_eval <<-END
+                def #{meth}?
+                  attr = read_attribute(:#{meth})
+                  (attr === true) ? true : (attr === false) ? false : attr.present?
+                end
+              END
+            end
+
+            unless respond_to?(meth)
+              self.class.class_eval <<-END
+                def #{meth}
+                  read_attribute(:#{meth})
+                end
+              END
+            end
+
+            send("#{meth}=", value)
           end
         end
         true # ensure true!
