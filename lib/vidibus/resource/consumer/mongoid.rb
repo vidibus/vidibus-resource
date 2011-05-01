@@ -46,7 +46,7 @@ module Vidibus::Resource
         @resource_provider ||= begin
           service = self.class.instance_variable_get("@resource_provider") or
             raise ConfigurationError.new("No resource provider has been defined. Call #{self.class}.resource_provider(service, realm)")
-          realm = self.class.instance_variable_get("@resource_realm") or
+          realm = (self.class.instance_variable_get("@resource_realm") || try!(:realm_uuid)) or
             raise ConfigurationError.new("No resource realm has been defined. Call #{self.class}.resource_realm(realm)")
           ::Service.discover(service, realm)
         end
