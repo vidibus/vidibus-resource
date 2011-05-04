@@ -15,6 +15,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project         = "vidibus-resource"
 
   s.add_dependency "rails", "~> 3.0.0"
+  s.add_dependency "mongoid", "~> 2.0.0"
   s.add_dependency "vidibus-uuid"
   s.add_dependency "vidibus-service"
   s.add_dependency "vidibus-api"
