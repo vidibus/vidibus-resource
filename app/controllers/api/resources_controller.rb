@@ -1,3 +1,4 @@
+# TODO: Split this file: one part for providers, one for consumers?
 class Api::ResourcesController < ApiController
   before_filter :ensure_klass
   before_filter :find_instance
@@ -5,7 +6,7 @@ class Api::ResourcesController < ApiController
   # Creates resource consumer on provider.
   def create
     @instance.add_resource_consumer(params["service"])
-    render :json => {:resource => @instance.fixed_resourceable_hash}
+    render(:json => {:resource => @instance.fixed_resourceable_hash})
   end
 
   # Updates resource on consumer.
@@ -15,7 +16,7 @@ class Api::ResourcesController < ApiController
       render :nothing => true
     rescue => e
       Rails.logger.error 'Error while updating resource consumer: '+e.inspect
-      render :json => { :error => e }, :status => :bad_request
+      render(:json => {:error => e}, :status => :bad_request)
     end
   end
 
@@ -30,13 +31,13 @@ class Api::ResourcesController < ApiController
     render :nothing => true
   end
 
-  protected
+  private
 
   def ensure_klass
     begin
       @klass = params[:klass].classify.constantize
     rescue => e
-      render :json => { :error => e }, :status => :bad_request
+      render :json => {:error => e}, :status => :bad_request
     end
   end
 

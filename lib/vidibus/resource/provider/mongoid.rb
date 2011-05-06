@@ -49,7 +49,7 @@ module Vidibus::Resource
         resourceable_hash
       end
 
-      protected
+      private
 
       # Update resource consumers if significant changes were made.
       # TODO: Send changes only (the resourceable ones)!

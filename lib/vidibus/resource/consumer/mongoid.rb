@@ -92,12 +92,12 @@ module Vidibus::Resource
         true # ensure true!
       end
 
-      protected
       def destroy_without_callback
         self.extinct = true
         destroy
       end
 
+      private
 
       # Fix empty arrays
       def fix_resource_attributes(data)
