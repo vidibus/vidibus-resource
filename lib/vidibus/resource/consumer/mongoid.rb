@@ -14,9 +14,11 @@ module Vidibus::Resource
         index :uuid
         validates :uuid, :uuid => true
 
+        attr_accessor :extinct
+
         before_create :add_resource_consumer
         before_save :set_resource_attributes
-        before_destroy :remove_resource_consumer
+        before_destroy :remove_resource_consumer, :unless => :extinct
       end
 
       # Registers this consumer with provider.
@@ -91,6 +93,11 @@ module Vidibus::Resource
       end
 
       protected
+      def destroy_without_callback
+        self.extinct = true
+        destroy
+      end
+
 
       # Fix empty arrays
       def fix_resource_attributes(data)
