@@ -10,7 +10,7 @@ module Vidibus::Resource
         field :resourceable_hash_checksum, :type => Hash
 
         before_update :update_resource_consumers
-        # before_destroy :destroy_resource_consumers
+        before_destroy :destroy_resource_consumers
       end
 
       # Adds given resource consumer.
@@ -71,6 +71,20 @@ module Vidibus::Resource
             end
           end
         end
+      end
+
+      # Removes this resource from consumers.
+      def destroy_resource_consumers
+        for service in resource_consumers
+          begin
+            ::Service.discover(service, realm_uuid).delete("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
+          rescue => e
+            Rails.logger.error "An error occurred while destroying resource consumer #{service}:"
+            Rails.logger.error e.inspect
+            errors = true
+          end
+        end
+        true unless errors # ensure true!
       end
     end
   end
