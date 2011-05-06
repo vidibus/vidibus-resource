@@ -20,11 +20,12 @@ class Api::ResourcesController < ApiController
   end
 
   # Removes a resource consumer from provider
+  # or remove a resource from a consumer.
   def destroy
-    if @instance.resource_provider?
+    if @instance.respond_to?(:resource_consumers)
       @instance.remove_resource_consumer(params["service"])
     else
-      # TODO
+      @instance.destroy_without_callback
     end
     render :nothing => true
   end
