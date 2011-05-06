@@ -45,6 +45,6 @@ class Api::ResourcesController < ApiController
     if @klass.new.respond_to?(:realm_uuid)
       result.and(:realm_uuid => params[:realm])
     end
-    @instance = result.first or render(:nothing => true, :status => :not_found)
+    @instance = result.first or render(:json => {:error => "#{@klass} #{params[:uuid]} not found"}, :status => :not_found)
   end
 end
