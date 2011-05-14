@@ -53,7 +53,7 @@ module Vidibus::Resource
 
       # Update resource consumers if significant changes were made.
       # TODO: Send changes only (the resourceable ones)!
-      # TODO: Perform update asynchronously
+      # Performs update asynchronously.
       def update_resource_consumers
         return unless resource_consumers and resource_consumers.any?
         return unless changes.except("resource_consumers", "updated_at").any?
@@ -64,7 +64,7 @@ module Vidibus::Resource
           self.resourceable_hash_checksum = hash_checksum
           for service in resource_consumers
             begin
-              ::Service.discover(service, realm_uuid).put("/api/resources/#{self.class.to_s.tableize}/#{uuid}", :body => {:resource => hash})
+              ::Service.discover(service, realm_uuid).delay.put("/api/resources/#{self.class.to_s.tableize}/#{uuid}", :body => {:resource => hash})
             rescue => e
               Rails.logger.error "An error occurred while updating resource consumer #{service}:"
               Rails.logger.error e.inspect
@@ -74,10 +74,11 @@ module Vidibus::Resource
       end
 
       # Removes this resource from consumers.
+      # Performs update asynchronously.
       def destroy_resource_consumers
         for service in resource_consumers
           begin
-            ::Service.discover(service, realm_uuid).delete("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
+            ::Service.discover(service, realm_uuid).delay.delete("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
           rescue => e
             Rails.logger.error "An error occurred while destroying resource consumer #{service}:"
             Rails.logger.error e.inspect
