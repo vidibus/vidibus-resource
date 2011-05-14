@@ -19,6 +19,8 @@ Gem::Specification.new do |s|
   s.add_dependency "vidibus-uuid"
   s.add_dependency "vidibus-service"
   s.add_dependency "vidibus-api"
+  s.add_dependency "delayed_job", "~> 2.0"
+  s.add_dependency "delayed_job_mongoid", "~> 1.0"
 
   s.add_development_dependency "bundler", ">= 1.0.0"
   s.add_development_dependency "rake", ">= 0"
