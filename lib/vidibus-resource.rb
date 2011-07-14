@@ -1,3 +1,4 @@
+require "json"
 require "rails"
 require "vidibus-uuid"
 require "vidibus-secure"

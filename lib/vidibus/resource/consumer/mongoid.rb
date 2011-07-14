@@ -39,8 +39,7 @@ module Vidibus::Resource
       # Updates resource attributes.
       # TODO: Update only data that has been changed.
       def update_resource_attributes(data)
-        data = fix_resource_attributes(data)
-        update_attributes(:resource_attributes => data)
+        update_attributes(:resource_attributes => JSON.parse(data))
       end
 
       # Returns a resource provider service.
@@ -98,16 +97,6 @@ module Vidibus::Resource
       end
 
       private
-
-      # Fix empty arrays
-      def fix_resource_attributes(data)
-        for key, value in data
-          if value === [EMPTY_ARRAY_IDENTIFIER]
-            data[key] = []
-          end
-        end
-        data
-      end
 
       module ClassMethods
 
