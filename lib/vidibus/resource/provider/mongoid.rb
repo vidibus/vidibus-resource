@@ -16,8 +16,10 @@ module Vidibus::Resource
       # Adds given resource consumer.
       def add_resource_consumer(service_uuid)
         list = resource_consumers || []
-        list << service_uuid
-        update_attributes(:resource_consumers => list.uniq)
+        unless list.include?(service_uuid)
+          list << service_uuid
+          update_attributes(:resource_consumers => list.uniq)
+        end
       end
 
       # Removes given resource consumer.
