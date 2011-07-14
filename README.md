@@ -15,6 +15,12 @@ Add `gem "vidibus-resource"` to your Gemfile. Then call `bundle install` on your
 DESCRIBE
 
 
+## TODO
+
+* Refactor
+* Write specs
+
+
 ## Copyright
 
 &copy; 2011 Andre Pankratz. See LICENSE for details.
