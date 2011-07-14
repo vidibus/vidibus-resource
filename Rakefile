@@ -1,10 +1,12 @@
 require "bundler"
-Bundler::GemHelper.install_tasks
-
-require "rake"
 require "rdoc/task"
 require "rspec"
 require "rspec/core/rake_task"
+
+Bundler::GemHelper.install_tasks
+
+$LOAD_PATH.unshift File.expand_path("../lib", __FILE__)
+require "vidibus/resource/version"
 
 RSpec::Core::RakeTask.new(:rcov) do |t|
   t.pattern = "spec/**/*_spec.rb"
@@ -13,10 +15,11 @@ RSpec::Core::RakeTask.new(:rcov) do |t|
 end
 
 Rake::RDocTask.new do |rdoc|
-  require File.expand_path("../lib/vidibus/resource/version", __FILE__)
   rdoc.rdoc_dir = "rdoc"
-  rdoc.title = "vidibus-resource #{Vidibus::Resource::VERSION}"
+  rdoc.title = "vidibus-sysinfo #{Vidibus::Resource::VERSION}"
   rdoc.rdoc_files.include("README*")
   rdoc.rdoc_files.include("lib/**/*.rb")
   rdoc.options << "--charset=utf-8"
 end
+
+task :default => :rcov

@@ -4,5 +4,5 @@ module Vidibus
   end
 end
 
-require "resource/provider/mongoid"
-require "resource/consumer/mongoid"
+require "vidibus/resource/provider/mongoid"
+require "vidibus/resource/consumer/mongoid"
