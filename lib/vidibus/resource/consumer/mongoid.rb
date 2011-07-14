@@ -23,9 +23,8 @@ module Vidibus::Resource
 
       # Registers this consumer with provider.
       def add_resource_consumer
-        response = resource_provider.post("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
-        data = response["resource"]
-        self.resource_attributes = fix_resource_attributes(data)
+        response = register_resource_consumer
+        self.resource_attributes = JSON.parse(response["resource"])
         set_resource_attributes(true)
         true # ensure true!
       end
@@ -97,6 +96,10 @@ module Vidibus::Resource
       end
 
       private
+
+      def register_resource_consumer
+        resource_provider.post("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
+      end
 
       module ClassMethods
 
