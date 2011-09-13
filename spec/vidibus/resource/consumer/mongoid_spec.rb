@@ -1,36 +1,34 @@
-require "spec_helper"
+require 'spec_helper'
 
-class Model
-  include Mongoid::Document
-  include Vidibus::Resource::Consumer::Mongoid
-end
+describe Vidibus::Resource::Consumer::Mongoid do
+  describe 'resource attributes' do
+    let(:subject) do
+      ConsumerModel.new.tap do |m|
+        m.resource_attributes = {'name' => 'Jenny'}
+        m.send(:set_resource_attributes, true)
+      end
+    end
 
-describe "Vidibus::Resource::Consumer::Mongoid" do
+    it 'should be readable' do
+      subject.name.should eql('Jenny')
+    end
 
-  let(:model) do
-    Model.new.tap do |m|
-      m.resource_attributes = {"name" => "Jenny"}
-      m.set_resource_attributes(true)
+    it 'should be writable' do
+      subject.name = 'Sara'
+      subject.name.should eql('Sara')
+    end
+
+    it 'should be persistent' do
+      stub(subject).add_resource_consumer
+      stub(subject).set_resource_attributes
+      subject.save
+      subject.update_attributes!({:name => 'Sara'})
+      subject.reload
+      subject.name.should eql('Sara')
     end
   end
 
-  describe "attributes" do
-    it "should be readable" do
-      model.name.should eql("Jenny")
-    end
-
-    it "should be writable" do
-      model.name = "Sara"
-      model.name.should eql("Sara")
-    end
-
-    it "should be persistent" do
-      stub(model).add_resource_consumer
-      stub(model).set_resource_attributes
-      model.save
-      model.update_attributes!({:name => "Sara"})
-      model.reload
-      model.name.should eql("Sara")
-    end
+  describe '#add_resource_consumer' do
+    it 'should be spec\'d'
   end
 end

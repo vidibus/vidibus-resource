@@ -1,7 +1,7 @@
 module Vidibus::Resource
   module Consumer
-
-    class ConfigurationError < StandardError; end
+    class ConsumerError < Error; end
+    class ConfigurationError < ConsumerError; end
 
     module Mongoid
       extend ActiveSupport::Concern
@@ -24,36 +24,65 @@ module Vidibus::Resource
       # Registers this consumer with provider.
       def add_resource_consumer
         response = register_resource_consumer
-        self.resource_attributes = JSON.parse(response["resource"])
+        self.resource_attributes = JSON.parse(response['resource'])
         set_resource_attributes(true)
         true # ensure true!
       end
 
       # Removes this consumer from provider.
       def remove_resource_consumer
-        resource_provider.delete("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
+        resource_provider.delete(resource_uri)
         true # ensure true!
       end
 
-      # Updates resource attributes.
+      # Updates resource attributes from given JSON data.
       # TODO: Update only data that has been changed.
-      def update_resource_attributes(data)
-        update_attributes(:resource_attributes => JSON.parse(data))
+      def update_resource_attributes(json)
+        update_attributes(:resource_attributes => JSON.parse(json))
       end
 
       # Returns a resource provider service.
       def resource_provider
         @resource_provider ||= begin
-          service = self.class.instance_variable_get("@resource_provider") or
+          service = self.class.instance_variable_get('@resource_provider') or
             raise ConfigurationError.new("No resource provider has been defined. Call #{self.class}.resource_provider(service, realm)")
-          realm = (self.class.instance_variable_get("@resource_realm") || try!(:realm_uuid)) or
-            raise ConfigurationError.new("No resource realm has been defined. Call #{self.class}.resource_realm(realm)")
+          realm = (self.class.instance_variable_get('@resource_realm') || try!(:realm_uuid)) or
+            raise ConfigurationError.new("No resource realm has been defined. Call #{self.class}.resource_realm(realm) or define the attribute :realm_uuid.")
           ::Service.discover(service, realm)
         end
       end
 
-      # Populates attributes of instance from
-      # received resource_attributes hash.
+      module ClassMethods
+
+        # Sets up resource provider service type and realm.
+        def resource_provider(service, realm = nil)
+          @resource_provider = service
+          resource_realm(realm) if realm
+        end
+
+        # Sets up realm of resource.
+        # If no realm has been set up class-wide, the attribute :realm_uuid will be used.
+        def resource_realm(realm)
+          @resource_realm = realm
+        end
+
+        # Ensures that an instance with given conditions exists.
+        def ensure!(conditions)
+          self.where(conditions).first || self.create!(conditions)
+        end
+
+        # Remove all intances with given conditions.
+        def remove(conditions)
+          existing = self.where(conditions).to_a
+          for instance in existing
+            instance.destroy
+          end
+        end
+      end
+
+      private
+
+      # Populates attributes of instance from resource_attributes hash.
       def set_resource_attributes(force = false)
         if resource_attributes_changed? or force == true
           for key, value in resource_attributes
@@ -95,37 +124,12 @@ module Vidibus::Resource
         destroy
       end
 
-      private
-
       def register_resource_consumer
-        resource_provider.post("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
+        resource_provider.post(resource_uri)
       end
 
-      module ClassMethods
-
-        # Sets up resource provider service type and realm.
-        def resource_provider(service, realm = nil)
-          @resource_provider = service
-          resource_realm(realm) if realm
-        end
-
-        # Sets up realm of resource.
-        def resource_realm(realm)
-          @resource_realm = realm
-        end
-
-        # Ensures that an instance with given conditions exists.
-        def ensure!(conditions)
-          self.where(conditions).first || self.create!(conditions)
-        end
-
-        # Remove all intances with given conditions.
-        def remove(conditions)
-          existing = self.where(conditions).to_a
-          for instance in existing
-            instance.destroy
-          end
-        end
+      def resource_uri
+        @resource_uri ||= "/api/resources/#{self.class.to_s.tableize}/#{uuid}"
       end
     end
   end
