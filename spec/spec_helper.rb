@@ -5,6 +5,7 @@ require 'rr'
 require 'webmock/rspec'
 require 'vidibus-resource'
 
+require 'support/models'
 
 Mongoid.configure do |config|
   name = 'vidibus-resource_test'
