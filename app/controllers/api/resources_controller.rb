@@ -1,12 +1,24 @@
 # TODO: Split this file: one part for providers, one for consumers!
 class Api::ResourcesController < ApiController
   before_filter :ensure_klass
-  before_filter :ensure_instance
+  before_filter :ensure_instance, :unless => :no_instance_required?
 
-  # Creates resource consumer on provider.
+  # Creates resource consumer on provider or consumer.
+  # This action does not care if a resource already exists on consumer.
   def create
-    instance.add_resource_consumer(params[:service], params[:realm])
-    render(:json => {:resource => JSON.generate(instance.resourceable_hash)})
+    if provider?
+      instance.add_resource_consumer(params[:service], params[:realm])
+      render(:json => {:resource => JSON.generate(instance.resourceable_hash)})
+    else
+      if instance
+        instance.update_resource_attributes(params[:resource])
+      else
+        attributes = {:uuid => params[:uuid], :resource_attributes => JSON.parse(params[:resource])}
+        attributes[:realm_uuid] = params[:realm] if klass_with_realm?
+        klass.create!(attributes)
+      end
+      render(:nothing => true)
+    end
   end
 
   # Updates resource on consumer.
