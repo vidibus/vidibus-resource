@@ -14,7 +14,7 @@ module Vidibus::Resource
 
         attr_accessor :extinct
 
-        before_create :add_resource_consumer
+        before_create :add_resource_consumer, :unless => :resource_attributes?
         before_save :set_resource_attributes
         before_destroy :remove_resource_consumer, :unless => :extinct
       end
