@@ -1,4 +1,4 @@
-require "digest/md5"
+require 'digest/md5'
 
 module Vidibus::Resource
   module Provider
@@ -42,15 +42,16 @@ module Vidibus::Resource
         save
       end
 
+      # TODO: Get rid of this! It's only for the controller...
       def resource_provider?
         true
       end
 
+      # TODO: Get rid of this! It's only for the controller...
       def resource_consumer?
         false
       end
 
-      # TODO: Handle attributes properly
       def resourceable_hash
         @resourceable_hash ||= attributes.except('resource_consumers', '_id')
       end
