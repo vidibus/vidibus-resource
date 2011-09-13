@@ -52,6 +52,11 @@ module Vidibus::Resource
         end
       end
 
+      def destroy_without_callback
+        self.extinct = true
+        destroy
+      end
+
       module ClassMethods
 
         # Sets up resource provider service type and realm.
@@ -117,11 +122,6 @@ module Vidibus::Resource
           end
         end
         true # ensure true!
-      end
-
-      def destroy_without_callback
-        self.extinct = true
-        destroy
       end
 
       def register_resource_consumer
