@@ -7,8 +7,6 @@ module Vidibus::Resource
       extend ActiveSupport::Concern
 
       included do
-        include Vidibus::Uuid::Mongoid
-
         field :resource_attributes, :type => Hash, :default => {}
         field :uuid
         index :uuid
