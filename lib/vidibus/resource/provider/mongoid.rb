@@ -2,29 +2,43 @@ require "digest/md5"
 
 module Vidibus::Resource
   module Provider
+    class ProviderError < Error; end
+    class UpdateError < ProviderError; end
+    class DestroyError < ProviderError; end
+    class ConsumerNotFoundError < ProviderError; end
+
     module Mongoid
       extend ActiveSupport::Concern
 
       included do
-        field :resource_consumers, :type => Array, :default => []
+        field :resource_consumers, :type => Hash, :default => {}
         field :resourceable_hash_checksum, :type => Hash
 
         before_update :update_resource_consumers
         before_destroy :destroy_resource_consumers
+
+        scope :consumers_in_realm, lambda {|realm| where("resource_consumers.#{realm_uuid}" => {'$exists' => true})}
       end
 
       # Adds given resource consumer.
-      def add_resource_consumer(service_uuid)
-        list = resource_consumers || []
-        unless list.include?(service_uuid)
-          list << service_uuid
-          update_attributes(:resource_consumers => list.uniq)
+      def add_resource_consumer(service_uuid, realm_uuid)
+        self.resource_consumers ||= {}
+        self.resource_consumers[realm_uuid] ||= []
+        unless resource_consumers[realm_uuid].include?(service_uuid)
+          self.resource_consumers[realm_uuid] << service_uuid
+          update_resource_consumer(service_uuid, realm_uuid)
+          save
         end
       end
 
       # Removes given resource consumer.
-      def remove_resource_consumer(service_uuid)
-        self.resource_consumers.delete(service_uuid)
+      def remove_resource_consumer(service_uuid, realm_uuid)
+        unless resource_consumers[realm_uuid] and resource_consumers[realm_uuid].include?(service_uuid)
+          raise(ConsumerNotFoundError, "This resource has no consumer #{service_uuid} within realm #{realm_uuid}.")
+        end
+        destroy_resource_consumer(service_uuid, realm_uuid)
+        self.resource_consumers[realm_uuid].delete(service_uuid)
+        self.resource_consumers.delete(realm_uuid) if resource_consumers[realm_uuid].blank?
         save
       end
 
@@ -38,30 +52,39 @@ module Vidibus::Resource
 
       # TODO: Handle attributes properly
       def resourceable_hash
-        attributes
+        @resourceable_hash ||= attributes.except('resource_consumers', '_id')
+      end
+
+      def resourceable_hash_json
+        @resourceable_hash_json ||= JSON.generate(resourceable_hash)
       end
 
       private
 
-      # Update resource consumers if significant changes were made.
+      def resource_uri
+        @resource_uri ||= "/api/resources/#{self.class.to_s.tableize}/#{uuid}"
+      end
+
+      # Performs given block on each resource consumer service.
+      def each_resource_consumer
+        resource_consumers.each do |realm_uuid, service_uuids|
+          service_uuids.each do |service_uuid|
+            yield(service_uuid, realm_uuid)
+          end
+        end
+      end
+
+      # Updates resource consumers if significant changes were made.
       # TODO: Send changes only (the resourceable ones)!
       # Performs update asynchronously.
       def update_resource_consumers
         return unless resource_consumers and resource_consumers.any?
-        return unless changes.except("resource_consumers", "updated_at").any?
+        return unless changes.except('resource_consumers', 'updated_at').any?
 
-        hash = resourceable_hash
-        hash_checksum = Digest::MD5.hexdigest(hash.to_s)
-        unless hash_checksum == resourceable_hash_checksum
-          self.resourceable_hash_checksum = hash_checksum
-          uri = "/api/resources/#{self.class.to_s.tableize}/#{uuid}"
-          for service in resource_consumers
-            begin
-              ::Service.discover(service, realm_uuid).delay.put(uri, :body => {:resource => JSON.generate(hash)})
-            rescue => e
-              Rails.logger.error "An error occurred while updating resource consumer #{service}:"
-              Rails.logger.error e.inspect
-            end
+        self.resourceable_hash_checksum = Digest::MD5.hexdigest(resourceable_hash_json)
+        if resourceable_hash_checksum_changed?
+          each_resource_consumer do |service_uuid, realm_uuid|
+            update_resource_consumer(service_uuid, realm_uuid)
           end
         end
       end
@@ -69,16 +92,27 @@ module Vidibus::Resource
       # Removes this resource from consumers.
       # Performs update asynchronously.
       def destroy_resource_consumers
-        for service in resource_consumers
-          begin
-            ::Service.discover(service, realm_uuid).delay.delete("/api/resources/#{self.class.to_s.tableize}/#{uuid}")
-          rescue => e
-            Rails.logger.error "An error occurred while destroying resource consumer #{service}:"
-            Rails.logger.error e.inspect
-            errors = true
-          end
+        each_resource_consumer do |service_uuid, realm_uuid|
+          destroy_resource_consumer(service_uuid, realm_uuid)
         end
-        true unless errors # ensure true!
+      end
+
+      # Sends an API request to update the resource consumer.
+      def update_resource_consumer(service_uuid, realm_uuid)
+        begin
+          ::Service.discover(service_uuid, realm_uuid).delay.put(resource_uri, :body => {:resource => resourceable_hash_json})
+        rescue => e
+          raise(UpdateError, "Update of resource consumer #{service_uuid} with realm #{realm_uuid} failed!\n#{e.inspect}")
+        end
+      end
+
+      # Sends an API request to delete the resource consumer.
+      def destroy_resource_consumer(service_uuid, realm_uuid)
+        begin
+          ::Service.discover(service_uuid, realm_uuid).delay.delete(resource_uri)
+        rescue => e
+          raise(DestroyError, "Destroying resource consumer #{service_uuid} with realm #{realm_uuid} failed!\n#{e.inspect}")
+        end
       end
     end
   end

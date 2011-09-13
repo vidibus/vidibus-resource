@@ -5,7 +5,7 @@ class Api::ResourcesController < ApiController
 
   # Creates resource consumer on provider.
   def create
-    @instance.add_resource_consumer(params["service"])
+    @instance.add_resource_consumer(params['service'], params['realm'])
     render(:json => {:resource => JSON.generate(@instance.resourceable_hash)})
   end
 
@@ -24,7 +24,7 @@ class Api::ResourcesController < ApiController
   # or remove a resource from a consumer.
   def destroy
     if @instance.respond_to?(:resource_consumers)
-      @instance.remove_resource_consumer(params["service"])
+      @instance.remove_resource_consumer(params['service'], params['realm'])
     else
       @instance.destroy_without_callback
     end
