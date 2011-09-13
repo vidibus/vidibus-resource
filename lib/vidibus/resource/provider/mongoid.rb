@@ -25,7 +25,7 @@ module Vidibus::Resource
         self.resource_consumers[realm_uuid] ||= []
         unless resource_consumers[realm_uuid].include?(service_uuid)
           self.resource_consumers[realm_uuid] << service_uuid
-          update_resource_consumer(service_uuid, realm_uuid)
+          create_resource_consumer(service_uuid, realm_uuid)
           save
         end
       end
@@ -95,6 +95,11 @@ module Vidibus::Resource
         each_resource_consumer do |service_uuid, realm_uuid|
           destroy_resource_consumer(service_uuid, realm_uuid)
         end
+      end
+
+      # Sends an API request to create the resource consumer.
+      def create_resource_consumer(service_uuid, realm_uuid)
+        resource_consumer_request(service_uuid, realm_uuid, :post, :body => {:resource => resourceable_hash_json})
       end
 
       # Sends an API request to update the resource consumer.

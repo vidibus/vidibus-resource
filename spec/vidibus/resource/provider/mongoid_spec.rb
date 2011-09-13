@@ -72,8 +72,8 @@ describe Vidibus::Resource::Provider::Mongoid do
     end
 
     it 'should send an API request to the consumer service' do
-      stub_request(:put, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
-        with(:body => {:resource => subject.resourceable_hash_json, :realm => realm_uuid, :service => this.uuid, :sign => '914686b8f0544f7bbcbbf76dcc64ebd754ffa125e1354baaddc5fc0d87eea176'}).
+      stub_request(:post, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
+        with(:body => {:resource => subject.resourceable_hash_json, :realm => realm_uuid, :service => this.uuid, :sign => '1b39337f4dee30a15bed7651cf8749b6efb60d71c434160f301f1e72545f3886'}).
           to_return(:status => 200, :body => "", :headers => {})
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
       Delayed::Backend::Mongoid::Job.first.invoke_job
@@ -99,7 +99,7 @@ describe Vidibus::Resource::Provider::Mongoid do
 
   describe '#remove_resource_consumer' do
     before do
-      stub(subject).update_resource_consumer.with_any_args
+      stub(subject).create_resource_consumer.with_any_args
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
     end
 
@@ -139,7 +139,7 @@ describe Vidibus::Resource::Provider::Mongoid do
 
   describe '.consumers_in_realm' do
     before do
-      stub(subject).update_resource_consumer.with_any_args
+      stub(subject).create_resource_consumer.with_any_args
     end
 
     it 'should return resources of a given realm' do
