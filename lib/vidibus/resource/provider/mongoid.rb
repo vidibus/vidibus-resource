@@ -3,8 +3,7 @@ require 'digest/md5'
 module Vidibus::Resource
   module Provider
     class ProviderError < Error; end
-    class UpdateError < ProviderError; end
-    class DestroyError < ProviderError; end
+    class ServiceError < ProviderError; end
     class ConsumerNotFoundError < ProviderError; end
 
     module Mongoid
@@ -100,19 +99,19 @@ module Vidibus::Resource
 
       # Sends an API request to update the resource consumer.
       def update_resource_consumer(service_uuid, realm_uuid)
-        begin
-          ::Service.discover(service_uuid, realm_uuid).delay.put(resource_uri, :body => {:resource => resourceable_hash_json})
-        rescue => e
-          raise(UpdateError, "Update of resource consumer #{service_uuid} with realm #{realm_uuid} failed!\n#{e.inspect}")
-        end
+        resource_consumer_request(service_uuid, realm_uuid, :put, :body => {:resource => resourceable_hash_json})
       end
 
       # Sends an API request to delete the resource consumer.
       def destroy_resource_consumer(service_uuid, realm_uuid)
+        resource_consumer_request(service_uuid, realm_uuid, :delete)
+      end
+
+      def resource_consumer_request(service_uuid, realm_uuid, method, options = {})
         begin
-          ::Service.discover(service_uuid, realm_uuid).delay.delete(resource_uri)
+          ::Service.discover(service_uuid, realm_uuid).delay.send(method, resource_uri, options)
         rescue => e
-          raise(DestroyError, "Destroying resource consumer #{service_uuid} with realm #{realm_uuid} failed!\n#{e.inspect}")
+          raise(ServiceError, "Sending a #{method} request to the resource consumer #{service_uuid} within realm #{realm_uuid} failed!\n#{e.inspect}")
         end
       end
     end
