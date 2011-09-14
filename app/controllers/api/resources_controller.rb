@@ -17,7 +17,7 @@ class Api::ResourcesController < ApiController
         attributes[:realm_uuid] = params[:realm] if klass_with_realm?
         klass.create!(attributes)
       end
-      render(:nothing => true)
+      render(:nothing => true, :status => :no_content)
     end
   end
 
@@ -25,7 +25,7 @@ class Api::ResourcesController < ApiController
   def update
     begin
       instance.update_resource_attributes(params['resource'])
-      render :nothing => true
+      render(:nothing => true, :status => :no_content)
     rescue => e
       Rails.logger.error "Error while updating resource consumer:\n#{e.inspect}"
       render(:json => {:error => e}, :status => :bad_request)
@@ -39,7 +39,7 @@ class Api::ResourcesController < ApiController
     else
       instance.destroy_without_callback
     end
-    render(:nothing => true)
+    render(:nothing => true, :status => :no_content)
   end
 
   private
