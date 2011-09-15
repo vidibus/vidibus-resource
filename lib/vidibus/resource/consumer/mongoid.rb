@@ -8,11 +8,14 @@ module Vidibus::Resource
 
       included do
         field :resource_attributes, :type => Hash, :default => {}
-        field :response_uuid
+        field :resource_uuid
         field :uuid
-        index :response_uuid
+
+        index :resource_uuid
         index :uuid
+
         validates :uuid, :uuid => true
+        validates :resource_uuid, :uuid => {:allow_blank => true}
 
         attr_accessor :extinct
 
@@ -129,7 +132,7 @@ module Vidibus::Resource
       end
 
       def resource_uri
-        @resource_uri ||= "/api/resources/#{self.class.to_s.tableize}/#{response_uuid || uuid}"
+        @resource_uri ||= "/api/resources/#{self.class.to_s.tableize}/#{resource_uuid || uuid}"
       end
     end
   end
