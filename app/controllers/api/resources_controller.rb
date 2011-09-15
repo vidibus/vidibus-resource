@@ -13,7 +13,7 @@ class Api::ResourcesController < ApiController
       if instance
         instance.update_resource_attributes(params[:resource])
       else
-        attributes = {:uuid => params[:uuid], :resource_attributes => JSON.parse(params[:resource])}
+        attributes = {:resource_uuid => params[:uuid], :resource_attributes => JSON.parse(params[:resource])}
         attributes[:realm_uuid] = params[:realm] if klass_with_realm?
         klass.create!(attributes)
       end
@@ -58,7 +58,7 @@ class Api::ResourcesController < ApiController
 
   def instance
     @instance ||= begin
-      results = klass.where(:uuid => params[:uuid])
+      results = klass.any_of({:resource_uuid => params[:uuid]}, {:uuid => params[:uuid]})
       if klass_with_realm?
         results = results.and(:realm_uuid => params[:realm])
       end

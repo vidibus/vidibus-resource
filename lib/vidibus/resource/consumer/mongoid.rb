@@ -8,7 +8,9 @@ module Vidibus::Resource
 
       included do
         field :resource_attributes, :type => Hash, :default => {}
+        field :response_uuid
         field :uuid
+        index :response_uuid
         index :uuid
         validates :uuid, :uuid => true
 
