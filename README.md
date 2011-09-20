@@ -17,8 +17,9 @@ DESCRIBE
 
 ## TODO
 
-* Refactor
-* Write specs
+* Refactor controller?
+* Write more specs
+* Find instances not only by provider's realm, but also by resource consumer's realm
 
 
 ## Copyright
