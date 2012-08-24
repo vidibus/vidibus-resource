@@ -77,7 +77,7 @@ class Api::ResourcesController < ApiController
   end
 
   def provider?
-    @is_provider ||= klass.instance_methods.include?('resource_consumers')
+    @is_provider ||= klass.fields.include?('resource_consumers')
   end
 
   def ensure_instance
