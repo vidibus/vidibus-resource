@@ -1,6 +1,5 @@
 require 'rspec'
 require 'mongoid'
-require 'rack/test'
 require 'rr'
 require 'webmock/rspec'
 require 'vidibus-resource'
