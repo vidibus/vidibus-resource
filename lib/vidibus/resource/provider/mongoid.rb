@@ -13,6 +13,8 @@ module Vidibus::Resource
         field :resource_consumers, :type => Hash, :default => {}
         field :resourceable_hash_checksum, :type => Hash
 
+        attr_accessor :force_consumer_update
+
         before_update :update_resource_consumers
         before_destroy :destroy_resource_consumers
 
@@ -78,8 +80,10 @@ module Vidibus::Resource
       # TODO: Send changes only (the resourceable ones)!
       # Performs update asynchronously.
       def update_resource_consumers
-        return unless resource_consumers and resource_consumers.any?
-        return unless changes.except('resource_consumers', 'updated_at').any?
+        return unless resource_consumers && resource_consumers.any?
+        if !force_consumer_update
+          return unless changes.except('resource_consumers', 'updated_at').any?
+        end
 
         self.resourceable_hash_checksum = Digest::MD5.hexdigest(resourceable_hash_json)
         if resourceable_hash_checksum_changed?
