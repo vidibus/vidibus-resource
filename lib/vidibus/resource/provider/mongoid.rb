@@ -53,12 +53,8 @@ module Vidibus::Resource
         false
       end
 
-      def resourceable_hash
-        @resourceable_hash ||= attributes.except('resource_consumers', '_id')
-      end
-
-      def resourceable_hash_json
-        @resourceable_hash_json ||= JSON.generate(resourceable_hash)
+      def resourceable_hash(service_uuid = nil, realm_uuid = nil)
+        attributes.except('resource_consumers', '_id')
       end
 
       private
@@ -84,8 +80,8 @@ module Vidibus::Resource
         if !force_consumer_update
           return unless changes.except('resource_consumers', 'updated_at').any?
         end
-
-        self.resourceable_hash_checksum = Digest::MD5.hexdigest(resourceable_hash_json)
+        json = JSON.generate(resourceable_hash)
+        self.resourceable_hash_checksum = Digest::MD5.hexdigest(json)
         if resourceable_hash_checksum_changed?
           each_resource_consumer do |service_uuid, realm_uuid|
             update_resource_consumer(service_uuid, realm_uuid)
@@ -103,12 +99,12 @@ module Vidibus::Resource
 
       # Sends an API request to create the resource consumer.
       def create_resource_consumer(service_uuid, realm_uuid)
-        resource_consumer_request(service_uuid, realm_uuid, :post, :body => {:resource => resourceable_hash_json})
+        resource_consumer_request(service_uuid, realm_uuid, :post)
       end
 
       # Sends an API request to update the resource consumer.
       def update_resource_consumer(service_uuid, realm_uuid)
-        resource_consumer_request(service_uuid, realm_uuid, :put, :body => {:resource => resourceable_hash_json})
+        resource_consumer_request(service_uuid, realm_uuid, :put)
       end
 
       # Sends an API request to delete the resource consumer.
@@ -117,8 +113,15 @@ module Vidibus::Resource
       end
 
       def resource_consumer_request(service_uuid, realm_uuid, method, options = {})
+        if [:post, :put].include?(method)
+          hash = resourceable_hash(service_uuid, realm_uuid)
+          options[:body] = {
+            :resource => JSON.generate(hash)
+          }
+        end
         begin
-          ::Service.discover(service_uuid, realm_uuid).delay.send(method, resource_uri, options)
+          ::Service.discover(service_uuid, realm_uuid).
+            delay.send(method, resource_uri, options)
         rescue => e
           raise(ServiceError, "Sending a #{method} request to the resource consumer #{service_uuid} within realm #{realm_uuid} failed!\n#{e.inspect}")
         end

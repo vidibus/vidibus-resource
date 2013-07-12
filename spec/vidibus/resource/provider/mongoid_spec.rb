@@ -1,7 +1,9 @@
 require 'spec_helper'
 
 describe Vidibus::Resource::Provider::Mongoid do
-  let(:subject) {ProviderModel.create(:name => 'Jenny', :uuid => '84e8a690b6e1012e744a6c626d58b44c')}
+  let(:subject) do
+    ProviderModel.create(:name => 'Jenny', :uuid => '84e8a690b6e1012e744a6c626d58b44c')
+  end
 
   describe 'updating' do
     context 'without registered consumers' do
@@ -73,7 +75,7 @@ describe Vidibus::Resource::Provider::Mongoid do
 
     it 'should send an API request to the consumer service' do
       stub_request(:post, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
-        with(:body => {:resource => subject.resourceable_hash_json, :realm => realm_uuid, :service => this.uuid, :sign => '1b39337f4dee30a15bed7651cf8749b6efb60d71c434160f301f1e72545f3886'}).
+        with(:body => {:resource => JSON.generate(subject.resourceable_hash), :realm => realm_uuid, :service => this.uuid, :sign => '1b39337f4dee30a15bed7651cf8749b6efb60d71c434160f301f1e72545f3886'}).
           to_return(:status => 200, :body => "", :headers => {})
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
       Delayed::Backend::Mongoid::Job.first.invoke_job
@@ -134,6 +136,20 @@ describe Vidibus::Resource::Provider::Mongoid do
           to_return(:status => 200, :body => "", :headers => {})
       subject.remove_resource_consumer(consumer.uuid, realm_uuid)
       Delayed::Backend::Mongoid::Job.first.invoke_job
+    end
+  end
+
+  describe '#resourceable_hash' do
+    it 'should work without arguments' do
+      subject.resourceable_hash.should eq({
+        'name' => 'Jenny', 'uuid' => '84e8a690b6e1012e744a6c626d58b44c'
+      })
+    end
+
+    it 'should work with 2 arguments' do
+      subject.resourceable_hash('a', 'b').should eq({
+        'name' => 'Jenny', 'uuid' => '84e8a690b6e1012e744a6c626d58b44c'
+      })
     end
   end
 
