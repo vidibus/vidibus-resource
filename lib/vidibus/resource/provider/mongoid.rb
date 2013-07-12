@@ -43,6 +43,13 @@ module Vidibus::Resource
         save
       end
 
+      # Updates given resource consumer.
+      def refresh_resource_consumer(service_uuid, realm_uuid)
+        if resource_consumers[realm_uuid] && resource_consumers[realm_uuid].include?(service_uuid)
+          update_resource_consumer(service_uuid, realm_uuid)
+        end
+      end
+
       # TODO: Get rid of this! It's only for the controller...
       def resource_provider?
         true

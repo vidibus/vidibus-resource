@@ -139,6 +139,30 @@ describe Vidibus::Resource::Provider::Mongoid do
     end
   end
 
+  describe '#refresh_resource_consumer' do
+    context 'without resource consumers' do
+      it 'should do nothing' do
+        dont_allow(subject).update_resource_consumer.with_any_args
+        subject.refresh_resource_consumer(consumer.uuid, realm_uuid)
+      end
+    end
+
+    context 'with a resource consumer' do
+      before do
+        stub(subject).create_resource_consumer.with_any_args
+        subject.add_resource_consumer(consumer.uuid, realm_uuid)
+      end
+
+      it 'should send an API request to the consumer service' do
+      stub_request(:put, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
+        with(:body => {:resource => JSON.generate(subject.resourceable_hash), :realm => realm_uuid, :service => this.uuid, :sign => '914686b8f0544f7bbcbbf76dcc64ebd754ffa125e1354baaddc5fc0d87eea176'}).
+          to_return(:status => 200, :body => "", :headers => {})
+      subject.refresh_resource_consumer(consumer.uuid, realm_uuid)
+      Delayed::Backend::Mongoid::Job.first.invoke_job
+    end
+    end
+  end
+
   describe '#resourceable_hash' do
     it 'should work without arguments' do
       subject.resourceable_hash.should eq({
