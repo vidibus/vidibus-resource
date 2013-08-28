@@ -43,6 +43,14 @@ module Vidibus::Resource
         save
       end
 
+      # Updates all resources consumers
+      def refresh_resource_consumers
+        return unless resource_consumers && resource_consumers.any?
+        each_resource_consumer do |service_uuid, realm_uuid|
+          update_resource_consumer(service_uuid, realm_uuid)
+        end
+      end
+
       # Updates given resource consumer.
       def refresh_resource_consumer(service_uuid, realm_uuid)
         if resource_consumers[realm_uuid] && resource_consumers[realm_uuid].include?(service_uuid)
