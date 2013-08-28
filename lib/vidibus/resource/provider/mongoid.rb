@@ -127,12 +127,13 @@ module Vidibus::Resource
           }
         end
         begin
-          ::Service.discover(service_uuid, realm_uuid).
-            delay.send(method, resource_uri, options)
+          service = ::Service.discover(service_uuid, realm_uuid)
+          service.send(method, resource_uri, options)
         rescue => e
           raise(ServiceError, "Sending a #{method} request to the resource consumer #{service_uuid} within realm #{realm_uuid} failed!\n#{e.inspect}")
         end
       end
+      handle_asynchronously :resource_consumer_request
     end
   end
 end
