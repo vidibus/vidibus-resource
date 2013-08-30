@@ -21,7 +21,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'mongoid', '~> 2'
   s.add_dependency 'json'
   s.add_dependency 'vidibus-uuid'
-  s.add_dependency 'vidibus-service'
+  s.add_dependency 'vidibus-service', '>= 0.2.0'
   s.add_dependency 'vidibus-api'
   s.add_dependency 'delayed_job', '~> 3.0'
   s.add_dependency 'delayed_job_mongoid', '~> 1.0.8'
