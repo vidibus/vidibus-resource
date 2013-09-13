@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project         = 'vidibus-resource'
 
   s.add_dependency 'activesupport', '>= 3.0.0'
-  s.add_dependency 'mongoid', '>= 2.0.0'
+  s.add_dependency 'mongoid', '>= 2.5.0'
   s.add_dependency 'json'
   s.add_dependency 'vidibus-uuid'
   s.add_dependency 'vidibus-service', '>= 0.2.0'

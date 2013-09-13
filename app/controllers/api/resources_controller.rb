@@ -53,7 +53,7 @@ class Api::ResourcesController < ApiController
   end
 
   def klass_with_realm?
-    @is_klass_with_realm ||= klass.instance_methods.include?('realm_uuid')
+    @is_klass_with_realm ||= klass.instance_methods.include?(:realm_uuid)
   end
 
   def instance
