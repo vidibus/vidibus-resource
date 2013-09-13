@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/vidibus/vidibus-resource'
   s.summary     = 'Provides handling of remote resources'
   s.description = 'Allows creation of proxy objects of remote resources on distributed applications.'
+  s.license = 'MIT'
 
   s.required_rubygems_version = '>= 1.3.6'
   s.rubyforge_project         = 'vidibus-resource'
