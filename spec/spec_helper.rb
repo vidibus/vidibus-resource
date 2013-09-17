@@ -8,16 +8,14 @@ require 'support/models'
 require 'support/services'
 
 Mongoid.configure do |config|
-  name = 'vidibus-resource_test'
-  host = 'localhost'
-  # config.master = Mongo::Connection.new("localhost", 27017, :logger => Logger.new($stdout, :info)).db(name)
-  config.master = Mongo::Connection.new.db(name)
-  config.logger = nil
+  config.connect_to('vidibus-resource_test')
 end
 
 RSpec.configure do |config|
+  config.include WebMock::API
   config.mock_with :rr
   config.before(:each) do
-    Mongoid.master.collections.select {|c| c.name !~ /system/}.each(&:drop)
+    Mongoid::Sessions.default.collections.
+      select {|c| c.name !~ /system/}.each(&:drop)
   end
 end

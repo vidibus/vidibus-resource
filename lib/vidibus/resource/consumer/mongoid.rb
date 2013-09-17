@@ -11,8 +11,8 @@ module Vidibus::Resource
         field :resource_uuid
         field :uuid
 
-        index :resource_uuid
-        index :uuid
+        index({resource_uuid: 1})
+        index({uuid: 1})
 
         validates :uuid, :uuid => true
         validates :resource_uuid, :uuid => {:allow_blank => true}
