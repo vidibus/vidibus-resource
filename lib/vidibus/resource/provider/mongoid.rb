@@ -11,7 +11,7 @@ module Vidibus::Resource
 
       included do
         field :resource_consumers, :type => Hash, :default => {}
-        field :resourceable_hash_checksum, :type => Hash
+        field :resourceable_hash_checksum, :type => String
 
         attr_accessor :force_consumer_update
 
