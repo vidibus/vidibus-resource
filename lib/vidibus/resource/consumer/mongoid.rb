@@ -92,8 +92,8 @@ module Vidibus::Resource
 
       # Populates attributes of instance from resource_attributes hash.
       def set_resource_attributes(force = false)
-        if resource_attributes_changed? or new_record? or force == true
-          for key, value in resource_attributes
+        if resource_attributes_changed? || new_record? || force == true
+          resource_attributes.each do |key, value|
             meth = key.to_s
 
             unless respond_to?("#{meth}=")

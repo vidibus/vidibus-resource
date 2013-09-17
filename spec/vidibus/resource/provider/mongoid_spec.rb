@@ -2,7 +2,10 @@ require 'spec_helper'
 
 describe Vidibus::Resource::Provider::Mongoid do
   let(:subject) do
-    ProviderModel.create(:name => 'Jenny', :uuid => '84e8a690b6e1012e744a6c626d58b44c')
+    ProviderModel.create({
+      :name => 'Jenny',
+      :uuid => '84e8a690b6e1012e744a6c626d58b44c'
+    })
   end
 
   describe 'updating' do
