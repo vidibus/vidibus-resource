@@ -124,7 +124,7 @@ module Vidibus::Resource
 
       # Sends an API request to delete the resource consumer.
       def destroy_resource_consumer(service_uuid, realm_uuid)
-        resource_consumer_request(service_uuid, realm_uuid, :delete)
+        resource_consumer_request_without_delay(service_uuid, realm_uuid, :delete)
       end
 
       def resource_consumer_request(service_uuid, realm_uuid, method, options = {})
