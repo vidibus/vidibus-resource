@@ -80,6 +80,7 @@ module Vidibus::Resource
 
       # Performs given block on each resource consumer service.
       def each_resource_consumer
+        return unless resource_consumers
         resource_consumers.each do |realm_uuid, service_uuids|
           service_uuids.each do |service_uuid|
             yield(service_uuid, realm_uuid)
