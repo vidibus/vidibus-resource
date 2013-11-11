@@ -79,7 +79,7 @@ module Vidibus::Resource
           self.where(conditions).first || self.create!(conditions)
         end
 
-        # Remove all intances with given conditions.
+        # Remove all instances with given conditions.
         def remove(conditions)
           existing = self.where(conditions).to_a
           for instance in existing
