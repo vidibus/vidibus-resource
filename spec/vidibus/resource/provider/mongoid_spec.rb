@@ -7,6 +7,12 @@ describe Vidibus::Resource::Provider::Mongoid do
       :uuid => '84e8a690b6e1012e744a6c626d58b44c'
     })
   end
+  let(:consumer_client) do
+    stub(::Service).discover(consumer.uuid, realm_uuid) { consumer }
+    client = Object.new
+    stub(consumer).client { client }
+    client
+  end
 
   describe 'updating' do
     context 'without registered consumers' do
@@ -50,6 +56,7 @@ describe Vidibus::Resource::Provider::Mongoid do
       end
 
       it 'should destroy the record' do
+        stub(subject).destroy_resource_consumer
         subject.destroy.should be_true
         expect {subject.reload}.to raise_error
       end
@@ -73,7 +80,12 @@ describe Vidibus::Resource::Provider::Mongoid do
 
     it 'should update the consumer service asynchronously' do
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
-      Delayed::Backend::Mongoid::Job.count.should eq(1)
+      Delayed::Job.count.should eq(1)
+    end
+
+    it 'should update the consumer service asynchronously' do
+      subject.add_resource_consumer(consumer.uuid, realm_uuid)
+      YAML.load(Delayed::Job.first.handler).object.should eq(subject)
     end
 
     it 'should send an API request to the consumer service' do
@@ -81,7 +93,7 @@ describe Vidibus::Resource::Provider::Mongoid do
         with(:body => {:resource => JSON.generate(subject.resourceable_hash), :realm => realm_uuid, :service => this.uuid, :sign => '1b39337f4dee30a15bed7651cf8749b6efb60d71c434160f301f1e72545f3886'}).
           to_return(:status => 200, :body => "", :headers => {})
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
-      Delayed::Backend::Mongoid::Job.first.invoke_job
+      Delayed::Job.first.invoke_job
     end
 
     context 'with an existing consumer service' do
@@ -104,8 +116,15 @@ describe Vidibus::Resource::Provider::Mongoid do
 
   describe '#remove_resource_consumer' do
     before do
+      stub_services
       stub(subject).create_resource_consumer.with_any_args
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
+      stub(consumer_client).delete
+    end
+
+    it 'should not delete the consumer service asynchronously' do
+      subject.remove_resource_consumer(consumer.uuid, realm_uuid)
+      Delayed::Job.count.should eq(0)
     end
 
     it 'should remove the service with matching uuid and realm' do
@@ -128,17 +147,10 @@ describe Vidibus::Resource::Provider::Mongoid do
       expect {subject.remove_resource_consumer(consumer.uuid, '289e0df0219f012e52fb6c626d58b44c')}.to raise_error(Vidibus::Resource::Provider::ConsumerNotFoundError)
     end
 
-    it 'should delete the consumer service asynchronously' do
-      subject.remove_resource_consumer(consumer.uuid, realm_uuid)
-      Delayed::Backend::Mongoid::Job.count.should eq(1)
-    end
-
     it 'should send an API request to the consumer service' do
-      stub_request(:delete, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
-        with(:query => {:realm => realm_uuid, :service => this.uuid, :sign => 'fd1daf5fc585b092835971a39325d533c0e76083c6d51ec2facbe35c694bef06'}).
-          to_return(:status => 200, :body => "", :headers => {})
+      path = "/api/resources/provider_models/#{subject.uuid}"
+      mock(consumer_client).delete(path, {})
       subject.remove_resource_consumer(consumer.uuid, realm_uuid)
-      Delayed::Backend::Mongoid::Job.first.invoke_job
     end
   end
 
@@ -157,12 +169,18 @@ describe Vidibus::Resource::Provider::Mongoid do
       end
 
       it 'should send an API request to the consumer service' do
-      stub_request(:put, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
-        with(:body => {:resource => JSON.generate(subject.resourceable_hash), :realm => realm_uuid, :service => this.uuid, :sign => '914686b8f0544f7bbcbbf76dcc64ebd754ffa125e1354baaddc5fc0d87eea176'}).
-          to_return(:status => 200, :body => "", :headers => {})
-      subject.refresh_resource_consumer(consumer.uuid, realm_uuid)
-      Delayed::Backend::Mongoid::Job.first.invoke_job
-    end
+        body = {
+          resource: JSON.generate(subject.resourceable_hash),
+          realm: realm_uuid,
+          service: this.uuid,
+          sign: '914686b8f0544f7bbcbbf76dcc64ebd754ffa125e1354baaddc5fc0d87eea176'
+        }
+        stub_request(:put, "#{consumer.url}/api/resources/provider_models/#{subject.uuid}").
+          with(:body => body).
+          to_return(:status => 200, :body => '', :headers => {})
+        subject.refresh_resource_consumer(consumer.uuid, realm_uuid)
+        Delayed::Job.first.invoke_job
+      end
     end
   end
 
