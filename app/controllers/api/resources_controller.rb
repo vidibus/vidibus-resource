@@ -27,7 +27,6 @@ class Api::ResourcesController < ApiController
       instance.update_resource_attributes(params['resource'])
       render(:nothing => true, :status => :no_content)
     rescue => e
-      Rails.logger.error "Error while updating resource consumer:\n#{e.inspect}"
       render(:json => {:error => e}, :status => :bad_request)
     end
   end
