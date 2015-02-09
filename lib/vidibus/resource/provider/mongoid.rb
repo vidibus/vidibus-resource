@@ -145,7 +145,7 @@ module Vidibus::Resource
           raise(ServiceError, "Sending a #{method} request to the resource consumer #{service_uuid} within realm #{realm_uuid} failed!\n#{e.inspect}")
         end
       end
-      handle_asynchronously :resource_consumer_request
+      handle_asynchronously :resource_consumer_request, queue: 'resource'
     end
   end
 end

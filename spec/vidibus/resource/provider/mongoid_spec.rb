@@ -87,12 +87,12 @@ describe Vidibus::Resource::Provider::Mongoid do
 
     it 'should update the consumer service asynchronously' do
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
-      Delayed::Job.count.should eq(1)
+      YAML.load(Delayed::Job.first.handler).object.should eq(subject)
     end
 
-    it 'should update the consumer service asynchronously' do
+    it 'should add a job to the resource queue' do
       subject.add_resource_consumer(consumer.uuid, realm_uuid)
-      YAML.load(Delayed::Job.first.handler).object.should eq(subject)
+      Delayed::Job.first.queue.should eq('resource')
     end
 
     it 'should send an API request to the consumer service' do
