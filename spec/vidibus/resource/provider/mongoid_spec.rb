@@ -38,6 +38,13 @@ describe Vidibus::Resource::Provider::Mongoid do
         mock(subject).update_resource_consumer(another_consumer.uuid, realm_uuid)
         subject.update_attributes(:name => 'Marta').should be_true
       end
+
+      it 'should not fail without service UUIDs' do
+        stub(subject).resource_consumers {[realm_uuid, nil]}
+        expect {
+          subject.update_attributes(name: 'Marta')
+        }.to_not raise_error
+      end
     end
   end
 
