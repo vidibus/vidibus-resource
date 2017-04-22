@@ -145,6 +145,9 @@ module Vidibus::Resource
           raise(ServiceError, "Sending a #{method} request to the resource consumer #{service_uuid} within realm #{realm_uuid} failed!\n#{e.inspect}")
         end
       end
+      # TODO: create custom job for resource consumer that gets delayed for
+      # 10 seoncds. Update that job as other updates come in and postpone the
+      # job further. Perform once not update has come in anymore for 10 seconds
       handle_asynchronously :resource_consumer_request, queue: 'resource'
     end
   end
