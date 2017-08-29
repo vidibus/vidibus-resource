@@ -99,7 +99,7 @@ module Vidibus::Resource
         end
         json = JSON.generate(resourceable_hash)
         self.resourceable_hash_checksum = Digest::MD5.hexdigest(json)
-        if resourceable_hash_checksum_changed?
+        if force_consumer_update || resourceable_hash_checksum_changed?
           each_resource_consumer do |service_uuid, realm_uuid|
             update_resource_consumer(service_uuid, realm_uuid)
           end
