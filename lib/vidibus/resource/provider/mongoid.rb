@@ -44,17 +44,17 @@ module Vidibus::Resource
       end
 
       # Updates all resources consumers
-      def refresh_resource_consumers
+      def refresh_resource_consumers(options = {})
         return unless resource_consumers && resource_consumers.any?
         each_resource_consumer do |service_uuid, realm_uuid|
-          update_resource_consumer(service_uuid, realm_uuid)
+          update_resource_consumer(service_uuid, realm_uuid, options)
         end
       end
 
       # Updates given resource consumer.
-      def refresh_resource_consumer(service_uuid, realm_uuid)
+      def refresh_resource_consumer(service_uuid, realm_uuid, options = {})
         if resource_consumers[realm_uuid] && resource_consumers[realm_uuid].include?(service_uuid)
-          update_resource_consumer(service_uuid, realm_uuid)
+          update_resource_consumer(service_uuid, realm_uuid, options = {})
         end
       end
 
@@ -107,7 +107,6 @@ module Vidibus::Resource
       end
 
       # Removes this resource from consumers.
-      # Performs update asynchronously.
       def destroy_resource_consumers
         each_resource_consumer do |service_uuid, realm_uuid|
           destroy_resource_consumer(service_uuid, realm_uuid)
@@ -120,8 +119,10 @@ module Vidibus::Resource
       end
 
       # Sends an API request to update the resource consumer.
-      def update_resource_consumer(service_uuid, realm_uuid)
-        resource_consumer_request(service_uuid, realm_uuid, :put)
+      def update_resource_consumer(service_uuid, realm_uuid, options = {})
+        method = 'resource_consumer_request'
+        method << '_without_delay' if options[:immediate]
+        self.send(method, service_uuid, realm_uuid, :put)
       end
 
       # Sends an API request to delete the resource consumer.
