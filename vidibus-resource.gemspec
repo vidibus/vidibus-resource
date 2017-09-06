@@ -19,14 +19,15 @@ Gem::Specification.new do |s|
   s.rubyforge_project         = 'vidibus-resource'
 
   s.add_dependency 'activesupport', '>= 3'
-  s.add_dependency 'mongoid', '~> 3'
+  s.add_dependency 'mongoid', '>= 3'
   s.add_dependency 'json'
   s.add_dependency 'vidibus-uuid'
-  s.add_dependency 'vidibus-service', '~> 0.3'
+  s.add_dependency 'vidibus-service', '>= 0.3'
   s.add_dependency 'vidibus-api'
   s.add_dependency 'delayed_job', '~> 4'
   s.add_dependency 'delayed_job_mongoid'
 
+  s.add_development_dependency 'activesupport', '3.2.21'
   s.add_development_dependency 'bundler', '>= 1.0.0'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rdoc'
