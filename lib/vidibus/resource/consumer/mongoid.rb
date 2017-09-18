@@ -128,7 +128,7 @@ module Vidibus::Resource
       end
 
       def register_resource_consumer
-        resource_provider.post(resource_uri)
+        resource_provider.client.post(resource_uri)
       end
 
       def resource_uri
