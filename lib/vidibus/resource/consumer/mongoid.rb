@@ -19,9 +19,13 @@ module Vidibus::Resource
 
         attr_accessor :extinct
 
-        before_create :add_resource_consumer, :unless => :resource_attributes?
-        before_save :set_resource_attributes
+        before_validation :add_resource_consumer, if: :add_resource_consumer?
+        before_validation :set_resource_attributes
         before_destroy :remove_resource_consumer, :unless => :extinct
+      end
+
+      def add_resource_consumer?
+        !!(new_record? && !resource_attributes?)
       end
 
       # Registers this consumer with provider.
